@@ -202,15 +202,34 @@ node index.js
 
 ---
 
+## Live Demo
+
+**🌐 Live API URL:** https://api-rate-limiter-0cge.onrender.com
+
+⚠️ **Note**: This is deployed on Render's free tier, so the server may be asleep. Please make an initial request to wake it up before testing.
+
+### Quick Rate Limiting Test
+
+**Test URL:** https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060
+
+**Instructions:**
+1. Click the test URL above 4 times quickly (or use curl/Postman)
+2. First 3 requests should return school data
+3. 4th request should return HTTP 429 (rate limit exceeded)
+4. Wait 1 minute and try again - it should work
+
+---
+
 ## Testing Rate Limiting
 
-To test the rate limiting functionality:
+### Local Testing
+To test the rate limiting functionality locally:
 
 1. Make 3 requests quickly to any endpoint
 2. The 4th request within the same minute will return HTTP 429
 3. Wait for the time window to reset and try again
 
-Example using curl:
+Example using curl (localhost):
 ```bash
 # These should succeed
 curl -X POST http://localhost:3000/api/school/addSchool -H "Content-Type: application/json" -d '{"name":"School1","address":"Address1","latitude":40.7128,"longitude":-74.0060}'
@@ -219,6 +238,16 @@ curl -X POST http://localhost:3000/api/school/addSchool -H "Content-Type: applic
 
 # This should return HTTP 429
 curl -X POST http://localhost:3000/api/school/addSchool -H "Content-Type: application/json" -d '{"name":"School4","address":"Address4","latitude":40.7131,"longitude":-74.0063}'
+```
+
+### Live Demo Testing
+Test the live API with curl:
+```bash
+# Test rate limiting on live server (make 4 requests quickly)
+curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
+curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
+curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
+curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
 ```
 
 ---
