@@ -12,6 +12,9 @@ export const initRateLimiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 3,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req, res) => {
+    return req.ip; // Use IP address to rate limit per user
+  },
   store: new RedisStore({
     sendCommand: (...args) => redisClient.sendCommand(args),
   }),
