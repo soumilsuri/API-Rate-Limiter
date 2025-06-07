@@ -1,17 +1,63 @@
-# School API Service with Rate Limiting
+# Akto Internship Assignment - Backend Developer
 
 ## Overview
 
-This project provides a simple REST API to manage schools in a MySQL database with built-in rate limiting functionality. It supports adding schools and listing all schools sorted by proximity to a user's location, while protecting against excessive API usage through Redis-based rate limiting.
+This project demonstrates two backend developer assignments completed for the Akto internship. It includes a school management API with Redis-based rate limiting and an API log analyzer service that provides insights from log data.
+
+---
+
+## Log Analysis Implementation (Assignment 2)
+
+### Approach
+The log analyzer processes JSON log files to extract meaningful insights about API usage patterns and error rates.
+
+### Features
+- **Top Active IPs**: Identifies the 5 most active IP addresses by request count
+- **Popular Endpoints**: Lists the 5 most frequently accessed API endpoints
+- **Error Tracking**: Counts 5xx server errors by endpoint for monitoring
+- **Summary Statistics**: Provides total log count and structured output
+
+### Technical Implementation
+- Reads JSON log file using Node.js fs/promises
+- Uses Map data structure for efficient counting and aggregation
+- Sorts results by frequency for meaningful insights
+- Returns structured JSON response for API consumption
+
+### Sample Log Analysis Output
+```json
+{
+  "topIPs": [
+    { "ip": "192.168.1.100", "count": 45 },
+    { "ip": "10.0.0.50", "count": 32 }
+  ],
+  "topEndpoints": [
+    { "endpoint": "/api/users", "count": 120 },
+    { "endpoint": "/api/orders", "count": 85 }
+  ],
+  "error5xxByEndpoint": [
+    { "endpoint": "/api/orders", "error_5xx_count": 5 },
+    { "endpoint": "/api/payments", "error_5xx_count": 2 }
+  ],
+  "totalLogs": 1000
+}
+```
 
 ---
 
 ## Features
 
+### Assignment 1: API Rate Limiter
 - **School Management**: Add and list schools with geolocation data
 - **Distance Calculation**: Sort schools by proximity using Haversine formula
 - **Rate Limiting**: Protect APIs with Redis-based sliding window rate limiter
 - **Geographic Sorting**: Intelligent distance-based school listing
+
+### Assignment 2: API Log Analyzer
+- **Log Processing**: Analyze JSON log files for API insights
+- **IP Analysis**: Track most active IP addresses
+- **Endpoint Analytics**: Identify top 5 most requested endpoints
+- **Error Detection**: Flag and count 5xx server errors by endpoint
+- **JSON Output**: Structured analysis results in JSON format
 
 ---
 
@@ -28,11 +74,14 @@ This project provides a simple REST API to manage schools in a MySQL database wi
 ├── models/
 │   └── school.model.js             # School model that creates the `schools` table
 ├── controllers/
-│   └── school.controller.js        # Controllers for Add School and List Schools endpoints
+│   ├── school.controller.js        # Controllers for Add School and List Schools endpoints
+│   └── logsAnalyzer.controller.js  # Log analysis controller for processing API logs
 ├── routes/
-│   └── school.route.js             # Express routes with rate limiting middleware
+│   ├── school.route.js             # Express routes with rate limiting middleware
+│   └── logs.route.js               # Routes for log analysis endpoints
 ├── middlewares/
 │   └── rateLimiter.middleware.js   # Rate limiting middleware using Redis
+├── sample_api_logs.json            # Sample log file for analysis
 ├── .env                            # Environment variables (DB, Redis, Rate limit configs)
 ├── package.json
 └── README.md                       # This documentation
@@ -42,7 +91,9 @@ This project provides a simple REST API to manage schools in a MySQL database wi
 
 ## API Endpoints
 
-### 1. Add School
+### School Management APIs (Assignment 1)
+
+#### 1. Add School
 
 * **URL:** `/api/school/addSchool`
 * **Method:** `POST`
@@ -54,7 +105,7 @@ This project provides a simple REST API to manage schools in a MySQL database wi
   * `longitude` (float, required)
 * **Function:** Validates input and inserts a new school record in the database.
 
-### 2. List Schools
+#### 2. List Schools
 
 * **URL:** `/api/school/listSchools`
 * **Method:** `GET`
@@ -63,6 +114,30 @@ This project provides a simple REST API to manage schools in a MySQL database wi
   * `latitude` (float, required)
   * `longitude` (float, required)
 * **Function:** Fetches all schools and returns them sorted by distance from the user's location.
+
+### Log Analysis API (Assignment 2)
+
+#### 3. Analyze API Logs
+
+* **URL:** `/api/logs/analyze-logs`
+* **Method:** `GET`
+* **Rate Limit:** None (for testing purposes)
+* **Function:** Processes the sample log file and returns analytical insights
+* **Response Format:**
+```json
+{
+  "topIPs": [
+    { "ip": "192.168.1.100", "count": 45 }
+  ],
+  "topEndpoints": [
+    { "endpoint": "/api/users", "count": 120 }
+  ],
+  "error5xxByEndpoint": [
+    { "endpoint": "/api/orders", "error_5xx_count": 5 }
+  ],
+  "totalLogs": 1000
+}
+```
 
 ---
 
@@ -210,13 +285,16 @@ node index.js
 
 ### Quick Rate Limiting Test
 
-**Test URL:** https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060
+**Test Log Analysis:** https://api-rate-limiter-0cge.onrender.com/api/logs/analyze-logs
+
+**Test School Rate Limiting:** https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060
 
 **Instructions:**
-1. Click the test URL above 4 times quickly (or use curl/Postman)
-2. First 3 requests should return school data
-3. 4th request should return HTTP 429 (rate limit exceeded)
-4. Wait 1 minute and try again - it should work
+1. **Log Analysis Test**: Click the log analysis URL above to see API insights
+2. **Rate Limiting Test**: Click the school API URL above 4 times quickly
+   - First 3 requests should return school data
+   - 4th request should return HTTP 429 (rate limit exceeded)
+   - Wait 1 minute and try again - it should work
 
 ---
 
@@ -241,13 +319,21 @@ curl -X POST http://localhost:3000/api/school/addSchool -H "Content-Type: applic
 ```
 
 ### Live Demo Testing
-Test the live API with curl:
+Test both assignments on the live server:
+
+**Assignment 1 - Rate Limiting:**
 ```bash
-# Test rate limiting on live server (make 4 requests quickly)
+# Test rate limiting (make 4 requests quickly)
 curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
 curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
 curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
 curl "https://api-rate-limiter-0cge.onrender.com/api/school/listSchools?latitude=40.7128&longitude=-74.0060"
+```
+
+**Assignment 2 - Log Analysis:**
+```bash
+# Test log analysis
+curl "https://api-rate-limiter-0cge.onrender.com/api/logs/analyze-logs"
 ```
 
 ---

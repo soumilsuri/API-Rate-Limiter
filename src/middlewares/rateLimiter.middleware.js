@@ -17,8 +17,6 @@ export const initRateLimiter = rateLimit({
     // Better IP detection for proxies/load balancers
     const forwarded = req.headers['x-forwarded-for'];
     const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip;
-    console.log('IP:', req.ip); 
-    console.log('Rate limit key:', ip); // Debug log
     return ip;
   },
   store: new RedisStore({
